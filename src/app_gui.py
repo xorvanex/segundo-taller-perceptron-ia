@@ -40,13 +40,28 @@ YD_CASO2 = np.array([-1, -1, -1, 1, -1, 1, 1, 1], dtype=int)
 
 
 class PerceptronGUI:
+    """
+    Aplicacion de escritorio con Interfaz Grafica de Usuario (GUI) para el
+    analisis, simulacion y entrenamiento del Perceptron Simple Bipolar.
+
+    Integra controles de configuracion de parametros iniciales, tablas de
+    verificacion por patrones, registro paso a paso de calculos y visualizacion
+    interactiva de curvas de error y superficies 3D de decision con Matplotlib.
+    """
+
     def __init__(self, root):
+        """
+        Inicializa la ventana principal, estilos visuales y paneles del sistema.
+
+        Args:
+            root (tk.Tk): Instancia de la ventana raiz de Tkinter.
+        """
         self.root = root
         self.root.title("Sistema de Perceptron Simple Bipolar - Inteligencia Artificial (Corte 2)")
         self.root.geometry("1340x840")
         self.root.minsize(1120, 720)
 
-        # Cierre seguro de todas las figuras de Matplotlib
+        # Cierre seguro de todas las figuras de Matplotlib al salir
         self.root.protocol("WM_DELETE_WINDOW", self.cerrar_aplicacion)
 
         self._configurar_estilos()
@@ -119,7 +134,23 @@ class PerceptronGUI:
         self._crear_panel_comparativa(self.tab3)
 
     def _crear_panel_caso(self, parent, caso_id, titulo, desc_entradas, w_def, b_def, X, yd, tiene_presets=False):
-        """Genera el panel interactivo: controles y tablas a la izquierda, visualizaciones a la derecha."""
+        """
+        Genera el panel interactivo dual para un caso de estudio.
+
+        Args:
+            parent (ttk.Frame): Contenedor padre de la pestana.
+            caso_id (int): Identificador del caso (1 para Paloma, 2 para Diagnostico).
+            titulo (str): Titulo descriptivo del problema.
+            desc_entradas (list): Etiquetas legibles de las senales de entrada.
+            w_def (list): Vector de pesos por defecto W(0).
+            b_def (float): Valor de sesgo por defecto b(0).
+            X (np.ndarray): Matriz de patrones de entrenamiento.
+            yd (np.ndarray): Vector de salidas deseadas.
+            tiene_presets (bool): Habilita el selector de inicializaciones predefinidas.
+
+        Retorna:
+            dict: Diccionario con referencias a los widgets, figuras y lienzos interactivos.
+        """
         panel_izq = ttk.Frame(parent, width=500, padding=8)
         panel_izq.pack(side="left", fill="y", padx=(4, 2), pady=4)
 
@@ -309,7 +340,12 @@ class PerceptronGUI:
         return componentes
 
     def _crear_panel_comparativa(self, parent):
-        """Construye la vista de sensibilidad exclusiva para el Caso 2 (Diagnostico Clinico)."""
+        """
+        Construye la vista de sensibilidad exclusiva para el Caso 2 (Diagnostico Clinico).
+
+        Args:
+            parent (ttk.Frame): Contenedor padre de la pestana de comparativa.
+        """
         # Banner informativo de contexto claro
         banner = ttk.Frame(parent, padding="10 8 10 8")
         banner.pack(fill="x", padx=6, pady=(4, 6))
@@ -485,7 +521,12 @@ class PerceptronGUI:
             comp["combo_preset"].current(0)
 
     def _ejecutar_entrenamiento(self, caso_id):
-        """Entrena el perceptron, captura el log completo y refresca interfaz y graficos."""
+        """
+        Entrena el perceptron, captura el log completo y refresca interfaz y graficos.
+
+        Args:
+            caso_id (int): Identificador del caso a entrenar (1 o 2).
+        """
         comp = self.componentes_caso1 if caso_id == 1 else self.componentes_caso2
         try:
             w0 = [float(ent.get().strip()) for ent in comp["entries_w"]]
@@ -542,7 +583,12 @@ class PerceptronGUI:
         self._graficar_caso(comp, historial_error, ps)
 
     def _abrir_ventana_log(self, caso_id):
-        """Abre una ventana emergente maximizable con el log completo de operaciones."""
+        """
+        Abre una ventana emergente maximizable con el log completo de operaciones.
+
+        Args:
+            caso_id (int): Identificador del caso de estudio (1 o 2).
+        """
         comp = self.componentes_caso1 if caso_id == 1 else self.componentes_caso2
         log_contenido = comp.get("ultimo_log", "")
 
@@ -588,7 +634,14 @@ class PerceptronGUI:
         txt_modal.configure(state="disabled")
 
     def _graficar_caso(self, comp, historial_error, ps):
-        """Dibuja en las tres vistas: 3D ampliada, 2D ampliada y Vista Dual."""
+        """
+        Dibuja en las tres vistas: 3D ampliada, 2D ampliada y Vista Dual.
+
+        Args:
+            comp (dict): Diccionario de componentes del caso activo.
+            historial_error (list): Errores globales acumulados por epoca.
+            ps (PerceptronSimpleBipolar, opcional): Modelo entrenado para calcular el hiperplano.
+        """
         X = comp["X"]
         yd = comp["yd"]
         desc = comp["desc_entradas"]
@@ -611,7 +664,15 @@ class PerceptronGUI:
         comp["canvas_dual"].draw()
 
     def _dibujar_curva_2d(self, ax, historial_error, color_linea, titulo):
-        """Renderiza la curva de error en un eje 2D dado."""
+        """
+        Renderiza la curva de error en un eje cartesiano bidimensional.
+
+        Args:
+            ax (matplotlib.axes.Axes): Eje cartesiano donde se graficara la serie.
+            historial_error (list): Registro del error global acumulado por epoca.
+            color_linea (str): Codigo de color en formato hexadecimal.
+            titulo (str): Titulo explicativo del grafico.
+        """
         ax.clear()
         if historial_error:
             epocas = list(range(1, len(historial_error) + 1))
@@ -630,7 +691,17 @@ class PerceptronGUI:
             ax.set_title(titulo, fontsize=10, weight="bold")
 
     def _dibujar_espacio_3d(self, ax, X, yd, desc, ps, titulo):
-        """Renderiza los puntos bipolares y la superficie del hiperplano separador en 3D."""
+        """
+        Renderiza los puntos bipolares y la superficie del hiperplano separador en 3D.
+
+        Args:
+            ax (mpl_toolkits.mplot3d.Axes3D): Eje tridimensional interactivo.
+            X (np.ndarray): Matriz de entradas del problema de tamano (N, 3).
+            yd (np.ndarray): Vector de etiquetas deseadas de longitud N.
+            desc (list): Etiquetas representativas de las variables [x1, x2, x3].
+            ps (PerceptronSimpleBipolar, opcional): Red entrenada para derivar el plano separador.
+            titulo (str): Titulo superior de la grafica 3D.
+        """
         ax.clear()
         for i in range(len(yd)):
             if yd[i] == 1:
@@ -663,7 +734,9 @@ class PerceptronGUI:
         ax.view_init(elev=20, azim=45)
 
     def _ejecutar_comparativa(self):
-        """Ejecuta los tres escenarios de convergencia del Caso 2 y dibuja graficos comparativos."""
+        """
+        Ejecuta y compara los tres escenarios de convergencia del Caso 2 (Diagnostico).
+        """
         configs = [
             ("1. Principal", [-0.4, -0.7, 0.3], 0.1, "#1f77b4"),
             ("2. Optimizado", [-0.9, -0.9, -0.9], 0.9, "#2ca02c"),
@@ -708,7 +781,15 @@ class PerceptronGUI:
         self.comp_widgets["canvas_dual_comp"].draw()
 
     def _dibujar_curvas_superpuestas(self, ax, nombres, historiales, colores):
-        """Renderiza la evolucion del error de los tres experimentos del Caso 2."""
+        """
+        Renderiza la evolucion del error de los tres experimentos del Caso 2.
+
+        Args:
+            ax (matplotlib.axes.Axes): Eje cartesiano de destino.
+            nombres (list): Nombres de las tres configuraciones evaluadas.
+            historiales (list): Listas de error por epoca de cada experimento.
+            colores (list): Codigos hexadecimales de color para cada serie.
+        """
         ax.clear()
         for nom, hist, col in zip(nombres, historiales, colores):
             epocas_eje = list(range(1, len(hist) + 1))
@@ -723,7 +804,15 @@ class PerceptronGUI:
         ax.legend(loc="upper right", fontsize=8)
 
     def _dibujar_barras_convergencia(self, ax, nombres, epocas_totales, colores):
-        """Renderiza el grafico de barras comparativo de velocidad de convergencia."""
+        """
+        Renderiza el grafico de barras comparativo de velocidad de convergencia.
+
+        Args:
+            ax (matplotlib.axes.Axes): Eje cartesiano de destino.
+            nombres (list): Etiquetas de cada configuracion evaluada.
+            epocas_totales (list): Cantidad de epocas hasta converger (E=0).
+            colores (list): Codigos hexadecimales de color para cada barra.
+        """
         ax.clear()
         barras = ax.bar(nombres, epocas_totales, color=colores, width=0.45)
         ax.set_title("Velocidad de Convergencia por Configuracion Inicial (Caso 2)", fontsize=10, weight="bold")
@@ -739,12 +828,18 @@ class PerceptronGUI:
                         ha="center", va="bottom", fontsize=9, weight="bold")
 
     def cerrar_aplicacion(self):
-        """Cierra todas las figuras de Matplotlib de forma limpia y destruye la ventana."""
+        """
+        Cierra todas las figuras de Matplotlib de forma limpia y destruye la ventana.
+        Evita fugas de memoria y procesos huerfanos al salir del programa.
+        """
         plt.close("all")
         self.root.destroy()
 
 
 def main():
+    """
+    Punto de entrada principal para inicializar la aplicacion Tkinter.
+    """
     root = tk.Tk()
     app = PerceptronGUI(root)
     root.mainloop()

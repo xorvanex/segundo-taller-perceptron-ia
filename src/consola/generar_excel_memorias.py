@@ -11,6 +11,13 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 def crear_memorias_excel():
+    """
+    Genera programaticamente el libro de calculo Excel con tres hojas formales:
+    1. Resumen Ejecutivo (metricas consolidadas y separabilidad lineal).
+    2. Caso 1 Paloma (traza numerica paso a paso de las 3 epocas).
+    3. Caso 2 Diagnostico (traza numerica paso a paso de las 3 epocas).
+    Guarda el archivo en docs/Memorias_Calculo_Perceptron_Corte2.xlsx.
+    """
     wb = openpyxl.Workbook()
     # Eliminar hoja por defecto
     wb.remove(wb.active)

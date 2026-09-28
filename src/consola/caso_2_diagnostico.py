@@ -16,6 +16,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from perceptron import PerceptronSimpleBipolar
 
 def resolver_caso_2():
+    """
+    Ejecuta la resolucion algoritmica por consola del Caso de Estudio 2.
+    Realiza el entrenamiento principal (convergencia en 3 epocas), genera graficas
+    y conduce la experimentacion comparativa de sensibilidad (2 y 1 epocas).
+    """
     print("=" * 80)
     print(" CASO DE ESTUDIO 2: DIAGNOSTICO MEDICO BASADO EN SINTOMAS")
     print("=" * 80)

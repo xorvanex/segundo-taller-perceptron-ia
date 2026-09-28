@@ -16,6 +16,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from perceptron import PerceptronSimpleBipolar
 
 def resolver_caso_1():
+    """
+    Ejecuta la resolucion algoritmica por consola del Caso de Estudio 1.
+    Carga el dataset, entrena el perceptron, genera graficas en docs/img/
+    y valida la precision de clasificacion para el condicionamiento de la paloma.
+    """
     print("=" * 80)
     print(" CASO DE ESTUDIO 1: CONDICIONAMIENTO INSTRUMENTAL DE LA PALOMA")
     print("=" * 80)
