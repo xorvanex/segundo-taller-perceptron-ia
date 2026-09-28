@@ -8,6 +8,8 @@ Autores: Dago David Palmera Navarro, Julian David Camargo Padilla
 
 import os
 import sys
+import io
+import contextlib
 import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
@@ -40,25 +42,24 @@ YD_CASO2 = np.array([-1, -1, -1, 1, -1, 1, 1, 1], dtype=int)
 class PerceptronGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sistema de Perceptron Simple Bipolar - Inteligencia Artificial")
-        self.root.geometry("1260x780")
-        self.root.minsize(1050, 680)
+        self.root.title("Sistema de Perceptron Simple Bipolar - Inteligencia Artificial (Corte 2)")
+        self.root.geometry("1340x840")
+        self.root.minsize(1120, 720)
 
-        # Protocolo para cierre seguro sin recursos huerfanos
+        # Cierre seguro de todas las figuras de Matplotlib
         self.root.protocol("WM_DELETE_WINDOW", self.cerrar_aplicacion)
 
         self._configurar_estilos()
         self._construir_interfaz()
 
     def _configurar_estilos(self):
-        """Configura el esquema visual formal y profesional."""
+        """Aplica el esquema de colores institucional y tipografias profesionales."""
         style = ttk.Style()
         style.theme_use("clam")
-        
-        # Colores institucionales
+
         azul_primario = "#1f497d"
         gris_fondo = "#f4f6f9"
-        
+
         self.root.configure(bg=gris_fondo)
         style.configure("TFrame", background=gris_fondo)
         style.configure("TLabelframe", background=gris_fondo, font=("Segoe UI", 9, "bold"))
@@ -66,19 +67,20 @@ class PerceptronGUI:
         style.configure("TLabel", background=gris_fondo, font=("Segoe UI", 9))
         style.configure("Header.TLabel", font=("Segoe UI", 12, "bold"), foreground=azul_primario, background=gris_fondo)
         style.configure("SubHeader.TLabel", font=("Segoe UI", 9), foreground="#333333", background=gris_fondo)
+        style.configure("BannerTitle.TLabel", font=("Segoe UI", 10, "bold"), foreground=azul_primario, background="#e8eff7")
+        style.configure("BannerText.TLabel", font=("Segoe UI", 8), foreground="#222222", background="#e8eff7")
         style.configure("TButton", font=("Segoe UI", 9, "bold"), padding=5)
         style.configure("Accent.TButton", font=("Segoe UI", 9, "bold"), padding=6, background=azul_primario, foreground="#ffffff")
         style.configure("Treeview.Heading", font=("Segoe UI", 9, "bold"), background="#e1e6eb")
 
     def _construir_interfaz(self):
         """Construye el encabezado principal y las pestanas de analisis."""
-        # Encabezado institucional
-        header_frame = ttk.Frame(self.root, padding="10 8 10 5")
+        header_frame = ttk.Frame(self.root, padding="12 8 12 4")
         header_frame.pack(fill="x")
         ttk.Label(header_frame, text="UNIVERSIDAD DE CARTAGENA - FACULTAD DE INGENIERIA", style="Header.TLabel").pack(anchor="w")
         ttk.Label(header_frame, text="Taller de Perceptron Simple Bipolar (Corte 2) | Autores: Dago David Palmera Navarro, Julian David Camargo Padilla", style="SubHeader.TLabel").pack(anchor="w")
 
-        # Pestanas de navegacion (Notebook)
+        # Pestañas principales
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=5)
 
@@ -86,11 +88,11 @@ class PerceptronGUI:
         self.tab2 = ttk.Frame(self.notebook)
         self.tab3 = ttk.Frame(self.notebook)
 
-        self.notebook.add(self.tab1, text=" Caso 1: Paloma ")
+        self.notebook.add(self.tab1, text=" Caso 1: Condicionamiento Paloma ")
         self.notebook.add(self.tab2, text=" Caso 2: Diagnostico Clinico ")
-        self.notebook.add(self.tab3, text=" Comparativa de Sensibilidad ")
+        self.notebook.add(self.tab3, text=" Comparativa de Sensibilidad (Caso 2: Diagnostico) ")
 
-        # Construccion modular de cada vista
+        # Construccion de los paneles de cada caso
         self.componentes_caso1 = self._crear_panel_caso(
             parent=self.tab1,
             caso_id=1,
@@ -117,18 +119,17 @@ class PerceptronGUI:
         self._crear_panel_comparativa(self.tab3)
 
     def _crear_panel_caso(self, parent, caso_id, titulo, desc_entradas, w_def, b_def, X, yd, tiene_presets=False):
-        """Genera el panel dual interactivo: controles a la izquierda, graficas a la derecha."""
-        panel_izq = ttk.Frame(parent, width=470, padding=8)
-        panel_izq.pack(side="left", fill="y", padx=(5, 2), pady=5)
+        """Genera el panel interactivo: controles y tablas a la izquierda, visualizaciones a la derecha."""
+        panel_izq = ttk.Frame(parent, width=500, padding=8)
+        panel_izq.pack(side="left", fill="y", padx=(4, 2), pady=4)
 
         panel_der = ttk.Frame(parent, padding=8)
-        panel_der.pack(side="right", fill="both", expand=True, padx=(2, 5), pady=5)
+        panel_der.pack(side="right", fill="both", expand=True, padx=(2, 4), pady=4)
 
-        # 1. Marco de Parametros Iniciales
+        # 1. Condiciones Iniciales
         lbl_params = ttk.LabelFrame(panel_izq, text=" Condiciones Iniciales ", padding=8)
         lbl_params.pack(fill="x", pady=(0, 6))
 
-        # Selector de presets para el Caso 2
         combo_preset = None
         if tiene_presets:
             f_preset = ttk.Frame(lbl_params)
@@ -139,11 +140,10 @@ class PerceptronGUI:
                 "Configuracion Optimizada (2 Epocas)",
                 "Solucion Directa (1 Epoca)",
                 "Personalizado"
-            ], width=32)
+            ], width=34)
             combo_preset.current(0)
             combo_preset.pack(side="right", padx=5)
 
-        # Entradas de W y b
         f_inputs = ttk.Frame(lbl_params)
         f_inputs.pack(fill="x")
 
@@ -152,7 +152,7 @@ class PerceptronGUI:
             ttk.Label(f_inputs, text=f"W{i+1}(0):").grid(row=0, column=i*2, sticky="e", padx=(4, 2))
             ent = ttk.Entry(f_inputs, width=6)
             ent.insert(0, str(w_def[i]))
-            ent.grid(row=0, column=i*2+1, sticky="w", padx=(0, 8))
+            ent.grid(row=0, column=i*2+1, sticky="w", padx=(0, 6))
             entries_w.append(ent)
 
         ttk.Label(f_inputs, text="b(0):").grid(row=0, column=6, sticky="e", padx=(4, 2))
@@ -160,7 +160,6 @@ class PerceptronGUI:
         entry_b.insert(0, str(b_def))
         entry_b.grid(row=0, column=7, sticky="w")
 
-        # Botones de accion
         f_btn = ttk.Frame(lbl_params)
         f_btn.pack(fill="x", pady=(8, 2))
         btn_entrenar = ttk.Button(f_btn, text="Entrenar Perceptron", style="Accent.TButton",
@@ -171,21 +170,31 @@ class PerceptronGUI:
                                command=lambda: self._reset_parametros(caso_id, w_def, b_def))
         btn_reset.pack(side="right", expand=True, fill="x", padx=2)
 
-        # 2. Marco de Metricas de Convergencia
+        # 2. Resumen de Convergencia con boton para expandir log
         lbl_res = ttk.LabelFrame(panel_izq, text=" Resultados de Convergencia ", padding=8)
         lbl_res.pack(fill="x", pady=(0, 6))
 
-        txt_resultados = tk.Text(lbl_res, height=4, width=54, bg="#ffffff", relief="solid", borderwidth=1, font=("Consolas", 9))
-        txt_resultados.pack(fill="x")
+        txt_resultados = tk.Text(lbl_res, height=3, width=54, bg="#ffffff", relief="solid", borderwidth=1, font=("Consolas", 9))
+        txt_resultados.pack(fill="x", pady=(0, 4))
         txt_resultados.insert("1.0", "Presione 'Entrenar Perceptron' para iniciar la simulacion.")
         txt_resultados.configure(state="disabled")
 
-        # 3. Marco de Verificacion de Patrones (Treeview)
-        lbl_tabla = ttk.LabelFrame(panel_izq, text=" Verificacion de Clasificacion ", padding=6)
-        lbl_tabla.pack(fill="both", expand=True)
+        btn_expandir_log = ttk.Button(lbl_res, text="Expandir Log Detallado de Calculos en Ventana Completa",
+                                      command=lambda: self._abrir_ventana_log(caso_id))
+        btn_expandir_log.pack(fill="x")
 
+        # 3. Sub-Notebook en panel izquierdo: Tabla de Verificacion y Log Integrado
+        sub_nb_izq = ttk.Notebook(panel_izq)
+        sub_nb_izq.pack(fill="both", expand=True)
+
+        tab_tabla = ttk.Frame(sub_nb_izq)
+        tab_log = ttk.Frame(sub_nb_izq)
+        sub_nb_izq.add(tab_tabla, text=" Tabla de Verificacion ")
+        sub_nb_izq.add(tab_log, text=" Log de Epocas ")
+
+        # Tabla de Verificacion de Patrones
         columnas = ("patron", "entradas", "yd", "y", "a", "estado")
-        tree = ttk.Treeview(lbl_tabla, columns=columnas, show="headings", height=8)
+        tree = ttk.Treeview(tab_tabla, columns=columnas, show="headings", height=8)
         tree.heading("patron", text="Patron")
         tree.heading("entradas", text="Entradas [x1, x2, x3]")
         tree.heading("yd", text="yd")
@@ -193,81 +202,163 @@ class PerceptronGUI:
         tree.heading("a", text="a (Neta)")
         tree.heading("estado", text="Estado")
 
-        tree.column("patron", width=55, anchor="center")
-        tree.column("entradas", width=140, anchor="center")
-        tree.column("yd", width=40, anchor="center")
-        tree.column("y", width=40, anchor="center")
+        tree.column("patron", width=50, anchor="center")
+        tree.column("entradas", width=145, anchor="center")
+        tree.column("yd", width=38, anchor="center")
+        tree.column("y", width=38, anchor="center")
         tree.column("a", width=65, anchor="center")
-        tree.column("estado", width=80, anchor="center")
+        tree.column("estado", width=75, anchor="center")
         tree.pack(fill="both", expand=True)
 
-        # 4. Marco de Graficos Interactivos (Canvas Matplotlib)
-        fig = Figure(figsize=(6.2, 6.6), dpi=95)
-        ax_2d = fig.add_subplot(2, 1, 1)
-        ax_3d = fig.add_subplot(2, 1, 2, projection="3d")
-        fig.tight_layout(pad=3.0)
+        # Log de Epocas integrado con Scrollbars
+        f_log_text = ttk.Frame(tab_log)
+        f_log_text.pack(fill="both", expand=True)
+        scroll_y = ttk.Scrollbar(f_log_text, orient="vertical")
+        scroll_x = ttk.Scrollbar(f_log_text, orient="horizontal")
+        txt_log_embed = tk.Text(f_log_text, wrap="none", font=("Consolas", 8), bg="#ffffff",
+                                yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+        scroll_y.config(command=txt_log_embed.yview)
+        scroll_x.config(command=txt_log_embed.xview)
+        scroll_y.pack(side="right", fill="y")
+        scroll_x.pack(side="bottom", fill="x")
+        txt_log_embed.pack(side="left", fill="both", expand=True)
+        txt_log_embed.insert("1.0", "El registro detallado de calculos se mostrara tras ejecutar el entrenamiento.")
+        txt_log_embed.configure(state="disabled")
 
-        canvas = FigureCanvasTkAgg(fig, master=panel_der)
-        canvas.draw()
-        
-        # Barra de navegacion interactiva (permite rotacion 3D fluida y zoom)
-        toolbar_frame = ttk.Frame(panel_der)
-        toolbar_frame.pack(side="top", fill="x")
-        toolbar = NavigationToolbar2Tk(canvas, toolbar_frame)
-        toolbar.update()
-        canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+        # 4. Panel Derecho: Sub-Notebook con Vistas de Graficas
+        sub_nb_der = ttk.Notebook(panel_der)
+        sub_nb_der.pack(fill="both", expand=True)
 
-        # Registro de componentes
+        tab_3d = ttk.Frame(sub_nb_der)
+        tab_2d = ttk.Frame(sub_nb_der)
+        tab_dual = ttk.Frame(sub_nb_der)
+
+        sub_nb_der.add(tab_3d, text=" Hiperplano 3D (Vista Principal Grande) ")
+        sub_nb_der.add(tab_2d, text=" Curva de Aprendizaje 2D ")
+        sub_nb_der.add(tab_dual, text=" Vista Dual (2D + 3D) ")
+
+        # 4.1 Vista 3D Grande (Espaciosa, sin compresion)
+        fig_3d = Figure(figsize=(7.5, 7.0), dpi=100)
+        ax_3d_only = fig_3d.add_subplot(1, 1, 1, projection="3d")
+        fig_3d.subplots_adjust(left=0.02, right=0.98, top=0.94, bottom=0.06)
+        canvas_3d = FigureCanvasTkAgg(fig_3d, master=tab_3d)
+        canvas_3d.draw()
+        tb_frame_3d = ttk.Frame(tab_3d)
+        tb_frame_3d.pack(side="top", fill="x")
+        tb_3d = NavigationToolbar2Tk(canvas_3d, tb_frame_3d)
+        tb_3d.update()
+        canvas_3d.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
+        # 4.2 Vista 2D Grande
+        fig_2d = Figure(figsize=(7.5, 7.0), dpi=100)
+        ax_2d_only = fig_2d.add_subplot(1, 1, 1)
+        fig_2d.tight_layout(pad=3.0)
+        canvas_2d = FigureCanvasTkAgg(fig_2d, master=tab_2d)
+        canvas_2d.draw()
+        tb_frame_2d = ttk.Frame(tab_2d)
+        tb_frame_2d.pack(side="top", fill="x")
+        tb_2d = NavigationToolbar2Tk(canvas_2d, tb_frame_2d)
+        tb_2d.update()
+        canvas_2d.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
+        # 4.3 Vista Dual (3D con 65% de altura y 2D con 35%)
+        fig_dual = Figure(figsize=(7.5, 7.0), dpi=100)
+        ax_dual_2d = fig_dual.add_subplot(2, 1, 1)
+        ax_dual_3d = fig_dual.add_subplot(2, 1, 2, projection="3d")
+        fig_dual.tight_layout(pad=3.0)
+        canvas_dual = FigureCanvasTkAgg(fig_dual, master=tab_dual)
+        canvas_dual.draw()
+        tb_frame_dual = ttk.Frame(tab_dual)
+        tb_frame_dual.pack(side="top", fill="x")
+        tb_dual = NavigationToolbar2Tk(canvas_dual, tb_frame_dual)
+        tb_dual.update()
+        canvas_dual.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
+        # Estructura del caso
         componentes = {
             "entries_w": entries_w,
             "entry_b": entry_b,
             "combo_preset": combo_preset,
             "txt_res": txt_resultados,
+            "txt_log_embed": txt_log_embed,
             "tree": tree,
-            "fig": fig,
-            "ax_2d": ax_2d,
-            "ax_3d": ax_3d,
-            "canvas": canvas,
+            "sub_nb_der": sub_nb_der,
+            "fig_3d": fig_3d,
+            "ax_3d_only": ax_3d_only,
+            "canvas_3d": canvas_3d,
+            "fig_2d": fig_2d,
+            "ax_2d_only": ax_2d_only,
+            "canvas_2d": canvas_2d,
+            "fig_dual": fig_dual,
+            "ax_dual_2d": ax_dual_2d,
+            "ax_dual_3d": ax_dual_3d,
+            "canvas_dual": canvas_dual,
             "X": X,
             "yd": yd,
             "desc_entradas": desc_entradas,
             "w_def": w_def,
-            "b_def": b_def
+            "b_def": b_def,
+            "ultimo_log": ""
         }
 
         if combo_preset:
             combo_preset.bind("<<ComboboxSelected>>", lambda e: self._on_preset_selected())
 
-        # Dibujar estado inicial en el canvas
+        # Renderizar vista inicial de los graficos
         self._graficar_caso(componentes, historial_error=[], ps=None)
         return componentes
 
     def _crear_panel_comparativa(self, parent):
-        """Construye la vista de comparacion de sensibilidad entre configuraciones (Caso 2)."""
-        panel_izq = ttk.Frame(parent, width=470, padding=8)
-        panel_izq.pack(side="left", fill="y", padx=(5, 2), pady=5)
+        """Construye la vista de sensibilidad exclusiva para el Caso 2 (Diagnostico Clinico)."""
+        # Banner informativo de contexto claro
+        banner = ttk.Frame(parent, padding="10 8 10 8")
+        banner.pack(fill="x", padx=6, pady=(4, 6))
 
-        panel_der = ttk.Frame(parent, padding=8)
-        panel_der.pack(side="right", fill="both", expand=True, padx=(2, 5), pady=5)
+        # Cuadro de distincion conceptual
+        banner_box = tk.Frame(banner, bg="#e8eff7", relief="solid", borderwidth=1, padx=10, pady=8)
+        banner_box.pack(fill="x")
+
+        ttk.Label(banner_box,
+                  text="ESTUDIO DE SENSIBILIDAD A LAS CONDICIONES INICIALES W(0) Y b(0) [CASO 2: DIAGNOSTICO MEDICO]",
+                  style="BannerTitle.TLabel").pack(anchor="w")
+
+        texto_aclaratorio = (
+            "Esta seccion evalua la sensibilidad del Perceptron Simple Bipolar ante tres configuraciones de inicializacion "
+            "sinaptica sobre el MISMO dataset de 8 pacientes del Caso 2 (Fiebre, Cefalea y Fatiga).\n"
+            "Demuestra como la cercania geometrica del hiperplano inicial respecto a la frontera de decision permite "
+            "reducir el aprendizaje de 3 epocas (inicializacion general) a 2 epocas (optimizada) o 1 epoca (solucion directa).\n"
+            "*Nota de claridad: El Caso 1 (Paloma) no forma parte de esta comparativa ya que cuenta con sus condiciones fijas de Skinner."
+        )
+        ttk.Label(banner_box, text=texto_aclaratorio, style="BannerText.TLabel", justify="left").pack(anchor="w", pady=(3, 0))
+
+        # Panel inferior dual
+        f_cuerpo = ttk.Frame(parent)
+        f_cuerpo.pack(fill="both", expand=True, padx=4, pady=4)
+
+        panel_izq = ttk.Frame(f_cuerpo, width=500, padding=6)
+        panel_izq.pack(side="left", fill="y", padx=(2, 2))
+
+        panel_der = ttk.Frame(f_cuerpo, padding=6)
+        panel_der.pack(side="right", fill="both", expand=True, padx=(2, 2))
 
         # Tabla de experimentos
-        lbl_resumen = ttk.LabelFrame(panel_izq, text=" Experimentos de Sensibilidad a W(0) y b(0) ", padding=8)
-        lbl_resumen.pack(fill="x", pady=(0, 8))
+        lbl_resumen = ttk.LabelFrame(panel_izq, text=" Configuraciones Evaluadas en el Caso 2 ", padding=8)
+        lbl_resumen.pack(fill="x", pady=(0, 6))
 
-        btn_comp = ttk.Button(lbl_resumen, text="Ejecutar Comparativa Completa", style="Accent.TButton",
+        btn_comp = ttk.Button(lbl_resumen, text="Ejecutar Comparativa de Sensibilidad", style="Accent.TButton",
                               command=self._ejecutar_comparativa)
         btn_comp.pack(fill="x", pady=(0, 6))
 
         columnas = ("exp", "w0", "b0", "epocas", "w_fin", "b_fin")
         tree_comp = ttk.Treeview(lbl_resumen, columns=columnas, show="headings", height=5)
-        tree_comp.heading("exp", text="Experimento")
+        tree_comp.heading("exp", text="Experimento (Caso 2)")
         tree_comp.heading("w0", text="W(0)")
         tree_comp.heading("b0", text="b(0)")
         tree_comp.heading("epocas", text="Epocas")
         tree_comp.heading("w_fin", text="W* Final")
         tree_comp.heading("b_fin", text="b* Final")
 
-        tree_comp.column("exp", width=120, anchor="w")
+        tree_comp.column("exp", width=140, anchor="w")
         tree_comp.column("w0", width=95, anchor="center")
         tree_comp.column("b0", width=40, anchor="center")
         tree_comp.column("epocas", width=55, anchor="center")
@@ -275,57 +366,97 @@ class PerceptronGUI:
         tree_comp.column("b_fin", width=50, anchor="center")
         tree_comp.pack(fill="x")
 
-        # Texto explicativo del analisis de sensibilidad
-        lbl_info = ttk.LabelFrame(panel_izq, text=" Analisis de Sensibilidad ", padding=8)
+        # Analisis teorico
+        lbl_info = ttk.LabelFrame(panel_izq, text=" Analisis de Sensibilidad Dinamica ", padding=8)
         lbl_info.pack(fill="both", expand=True)
 
         txt_info = tk.Text(lbl_info, bg="#ffffff", relief="solid", borderwidth=1, font=("Segoe UI", 9), wrap="word")
         txt_info.pack(fill="both", expand=True)
         texto_analisis = (
-            "HALLAZGOS DEL ANALISIS DE SENSIBILIDAD:\n\n"
+            "ANALISIS COMPARATIVO DE SENSIBILIDAD (CASO 2):\n\n"
             "1. Experimento Principal (W0=[-0.4, -0.7, 0.3], b0=0.1):\n"
-            "   Convergencia en 3 epocas. Los pesos iniciales arbitrarios requieren "
-            "ajustes secuenciales a traves de 5 correcciones delta para alinear el hiperplano.\n\n"
+            "   Requiere 3 epocas completas. El hiperplano parte en una orientacion "
+            "arbitraria, acumulando un error de E=4 en la epoca 1, E=4 en la epoca 2, "
+            "y alcanzando la convergencia perfecta (E=0) en la epoca 3 tras 5 correcciones delta.\n\n"
             "2. Configuracion Optimizada (W0=[-0.9, -0.9, -0.9], b0=0.9):\n"
-            "   Convergencia acelerada en 2 epocas. La orientacion inicial se aproxima "
-            "al sector de clasificacion, reduciendo el error global inicial.\n\n"
+            "   Acelera la convergencia a 2 epocas. Al orientar los tres pesos sinapticos "
+            "negativos con un sesgo positivo alto, el error inicial se reduce a solo E=2, "
+            "logrando la calibracion en solo una correccion adicional.\n\n"
             "3. Solucion Directa (W0=[1.0, 1.0, 1.0], b0=0.0):\n"
-            "   Convergencia en 1 epoca (0 errores). El vector inicial satisface "
-            "inmediatamente la separabilidad lineal del conjunto sin requerir aprendizaje.\n\n"
-            "Conclusion: La velocidad de aprendizaje depende directamente de la "
-            "proximidad entre el hiperplano inicial y la frontera de decision optima."
+            "   Convergencia en 1 epoca (0 errores). El vector de pesos ya apunta en la "
+            "direccion optima de clasificacion mayoritaria, verificando los 8 patrones "
+            "desde el inicio sin requerir ajustes.\n\n"
+            "Principio Matematico Clave: En el Perceptron Simple, la velocidad de "
+            "aprendizaje es directamente proporcional a la proximidad angular y lineal "
+            "del vector normal inicial respecto al cono de soluciones separadoras."
         )
         txt_info.insert("1.0", texto_analisis)
         txt_info.configure(state="disabled")
 
-        # Graficos comparativos
-        fig_comp = Figure(figsize=(6.2, 6.6), dpi=95)
-        ax_comp_2d = fig_comp.add_subplot(2, 1, 1)
-        ax_comp_bar = fig_comp.add_subplot(2, 1, 2)
-        fig_comp.tight_layout(pad=3.0)
+        # Sub-Notebook en panel derecho para comparativa
+        sub_nb_comp = ttk.Notebook(panel_der)
+        sub_nb_comp.pack(fill="both", expand=True)
 
-        canvas_comp = FigureCanvasTkAgg(fig_comp, master=panel_der)
-        canvas_comp.draw()
+        tab_comp_curvas = ttk.Frame(sub_nb_comp)
+        tab_comp_barras = ttk.Frame(sub_nb_comp)
+        tab_comp_dual = ttk.Frame(sub_nb_comp)
 
-        toolbar_f = ttk.Frame(panel_der)
-        toolbar_f.pack(side="top", fill="x")
-        toolbar = NavigationToolbar2Tk(canvas_comp, toolbar_f)
-        toolbar.update()
-        canvas_comp.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+        sub_nb_comp.add(tab_comp_curvas, text=" Curvas de Aprendizaje Superpuestas ")
+        sub_nb_comp.add(tab_comp_barras, text=" Velocidad de Convergencia (Barras) ")
+        sub_nb_comp.add(tab_comp_dual, text=" Vista Comparativa Dual ")
+
+        # Curvas superpuestas
+        fig_curvas = Figure(figsize=(7.5, 6.8), dpi=100)
+        ax_curvas = fig_curvas.add_subplot(1, 1, 1)
+        fig_curvas.tight_layout(pad=3.0)
+        canvas_curvas = FigureCanvasTkAgg(fig_curvas, master=tab_comp_curvas)
+        canvas_curvas.draw()
+        tb_f1 = ttk.Frame(tab_comp_curvas)
+        tb_f1.pack(side="top", fill="x")
+        NavigationToolbar2Tk(canvas_curvas, tb_f1).update()
+        canvas_curvas.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
+        # Barras
+        fig_barras = Figure(figsize=(7.5, 6.8), dpi=100)
+        ax_barras = fig_barras.add_subplot(1, 1, 1)
+        fig_barras.tight_layout(pad=3.0)
+        canvas_barras = FigureCanvasTkAgg(fig_barras, master=tab_comp_barras)
+        canvas_barras.draw()
+        tb_f2 = ttk.Frame(tab_comp_barras)
+        tb_f2.pack(side="top", fill="x")
+        NavigationToolbar2Tk(canvas_barras, tb_f2).update()
+        canvas_barras.get_tk_widget().pack(side="bottom", fill="both", expand=True)
+
+        # Dual
+        fig_dual_comp = Figure(figsize=(7.5, 6.8), dpi=100)
+        ax_d1 = fig_dual_comp.add_subplot(2, 1, 1)
+        ax_d2 = fig_dual_comp.add_subplot(2, 1, 2)
+        fig_dual_comp.tight_layout(pad=3.0)
+        canvas_dual_comp = FigureCanvasTkAgg(fig_dual_comp, master=tab_comp_dual)
+        canvas_dual_comp.draw()
+        tb_f3 = ttk.Frame(tab_comp_dual)
+        tb_f3.pack(side="top", fill="x")
+        NavigationToolbar2Tk(canvas_dual_comp, tb_f3).update()
+        canvas_dual_comp.get_tk_widget().pack(side="bottom", fill="both", expand=True)
 
         self.comp_widgets = {
             "tree": tree_comp,
-            "fig": fig_comp,
-            "ax_2d": ax_comp_2d,
-            "ax_bar": ax_comp_bar,
-            "canvas": canvas_comp
+            "fig_curvas": fig_curvas,
+            "ax_curvas": ax_curvas,
+            "canvas_curvas": canvas_curvas,
+            "fig_barras": fig_barras,
+            "ax_barras": ax_barras,
+            "canvas_barras": canvas_barras,
+            "fig_dual_comp": fig_dual_comp,
+            "ax_d1": ax_d1,
+            "ax_d2": ax_d2,
+            "canvas_dual_comp": canvas_dual_comp
         }
-        
-        # Ejecucion automatica inicial de la comparativa
+
         self._ejecutar_comparativa()
 
     def _on_preset_selected(self):
-        """Actualiza los campos de entrada de acuerdo al preset seleccionado en el Caso 2."""
+        """Carga los valores de los experimentos en los campos de entrada del Caso 2."""
         combo = self.componentes_caso2["combo_preset"]
         idx = combo.current()
         presets = [
@@ -343,7 +474,7 @@ class PerceptronGUI:
             ent_b.insert(0, str(b))
 
     def _reset_parametros(self, caso_id, w_def, b_def):
-        """Restaura los valores por defecto de los pesos y sesgo."""
+        """Restaura los valores por defecto del caso seleccionado."""
         comp = self.componentes_caso1 if caso_id == 1 else self.componentes_caso2
         for i, ent in enumerate(comp["entries_w"]):
             ent.delete(0, tk.END)
@@ -354,7 +485,7 @@ class PerceptronGUI:
             comp["combo_preset"].current(0)
 
     def _ejecutar_entrenamiento(self, caso_id):
-        """Entrena el perceptron, actualiza tabla de verificacion y genera graficas."""
+        """Entrena el perceptron, captura el log completo y refresca interfaz y graficos."""
         comp = self.componentes_caso1 if caso_id == 1 else self.componentes_caso2
         try:
             w0 = [float(ent.get().strip()) for ent in comp["entries_w"]]
@@ -366,170 +497,249 @@ class PerceptronGUI:
         X = comp["X"]
         yd = comp["yd"]
 
-        # Instanciar y entrenar Perceptron Simple Bipolar
+        # Instanciar y capturar salida detallada de calculos (identica a terminal)
         ps = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=w0, sesgo_inicial=b0)
-        historial_error = ps.entrenar(X, yd, epocas_max=15, tolerancia=0, verbose=False)
 
-        # Actualizar texto de resultados
+        buffer_log = io.StringIO()
+        with contextlib.redirect_stdout(buffer_log):
+            historial_error = ps.entrenar(X, yd, epocas_max=15, tolerancia=0, verbose=True)
+
+        comp["ultimo_log"] = buffer_log.getvalue()
+
+        # Actualizar resumen de convergencia
         w_fin = [round(float(v), 2) for v in ps.W]
         b_fin = round(float(ps.b), 2)
-        txt = (
+        txt_res = (
             f"Convergencia: Epoca {ps.epocas_entrenadas} | Error Global Final: {historial_error[-1]}\n"
-            f"Pesos Finales W* = {w_fin}\n"
-            f"Sesgo Final b*   = {b_fin}\n"
+            f"Pesos Finales W* = {w_fin} | Sesgo Final b* = {b_fin}\n"
             f"Ecuacion del Hiperplano: {w_fin[0]}x1 + {w_fin[1]}x2 + {w_fin[2]}x3 + {b_fin} = 0"
         )
         comp["txt_res"].configure(state="normal")
         comp["txt_res"].delete("1.0", tk.END)
-        comp["txt_res"].insert("1.0", txt)
+        comp["txt_res"].insert("1.0", txt_res)
         comp["txt_res"].configure(state="disabled")
 
-        # Actualizar tabla de patrones y aciertos
+        # Actualizar log integrado
+        comp["txt_log_embed"].configure(state="normal")
+        comp["txt_log_embed"].delete("1.0", tk.END)
+        comp["txt_log_embed"].insert("1.0", comp["ultimo_log"])
+        comp["txt_log_embed"].configure(state="disabled")
+
+        # Actualizar tabla de patrones con formato entero limpio [x1, x2, x3]
         tree = comp["tree"]
         for item in tree.get_children():
             tree.delete(item)
 
-        aciertos = 0
         for i in range(len(yd)):
             a = round(ps.propagacion(X[i]), 2)
             y = ps.predecir(X[i])
-            es_correcto = (y == yd[i])
-            if es_correcto:
-                aciertos += 1
-            estado_txt = "CORRECTO" if es_correcto else "ERROR"
-            tree.insert("", "end", values=(f"P{i+1}", str(list(X[i])), yd[i], y, a, estado_txt))
+            estado_txt = "CORRECTO" if (y == yd[i]) else "ERROR"
+            # Formato de entrada limpio como enteros estandar
+            entradas_limpias = f"[{int(X[i, 0])}, {int(X[i, 1])}, {int(X[i, 2])}]"
+            tree.insert("", "end", values=(f"P{i+1}", entradas_limpias, yd[i], y, a, estado_txt))
 
-        # Renderizar graficos interactivos
+        # Renderizar en todas las vistas graficas
         self._graficar_caso(comp, historial_error, ps)
 
+    def _abrir_ventana_log(self, caso_id):
+        """Abre una ventana emergente maximizable con el log completo de operaciones."""
+        comp = self.componentes_caso1 if caso_id == 1 else self.componentes_caso2
+        log_contenido = comp.get("ultimo_log", "")
+
+        if not log_contenido:
+            messagebox.showinfo("Sin Datos", "Ejecute primero el entrenamiento para generar el registro de calculos.")
+            return
+
+        ventana_log = tk.Toplevel(self.root)
+        nombre_caso = "Caso 1: Paloma" if caso_id == 1 else "Caso 2: Diagnostico"
+        ventana_log.title(f"Memorias de Calculo Detalladas (Log de Epocas) - {nombre_caso}")
+        ventana_log.geometry("1020x680")
+        ventana_log.minsize(800, 500)
+
+        # Encabezado de la ventana
+        f_top = ttk.Frame(ventana_log, padding=10)
+        f_top.pack(fill="x")
+        ttk.Label(f_top, text=f"REGISTRO DETALLADO DE MULTIPLICACIONES, SUMAS NETAS Y ACTUALIZACIONES DELTA ({nombre_caso.upper()})",
+                  font=("Segoe UI", 10, "bold"), foreground="#1f497d").pack(side="left")
+
+        def copiar_portapapeles():
+            ventana_log.clipboard_clear()
+            ventana_log.clipboard_append(log_contenido)
+            messagebox.showinfo("Copiado", "Registro de calculos copiado al portapapeles.")
+
+        btn_copiar = ttk.Button(f_top, text="Copiar al Portapapeles", command=copiar_portapapeles)
+        btn_copiar.pack(side="right", padx=5)
+
+        # Area de texto con scroll
+        f_cuerpo = ttk.Frame(ventana_log, padding=10)
+        f_cuerpo.pack(fill="both", expand=True)
+
+        sc_y = ttk.Scrollbar(f_cuerpo, orient="vertical")
+        sc_x = ttk.Scrollbar(f_cuerpo, orient="horizontal")
+        txt_modal = tk.Text(f_cuerpo, wrap="none", font=("Consolas", 9), bg="#ffffff",
+                            yscrollcommand=sc_y.set, xscrollcommand=sc_x.set)
+        sc_y.config(command=txt_modal.yview)
+        sc_x.config(command=txt_modal.xview)
+        sc_y.pack(side="right", fill="y")
+        sc_x.pack(side="bottom", fill="x")
+        txt_modal.pack(side="left", fill="both", expand=True)
+
+        txt_modal.insert("1.0", log_contenido)
+        txt_modal.configure(state="disabled")
+
     def _graficar_caso(self, comp, historial_error, ps):
-        """Renderiza la curva de aprendizaje 2D y el hiperplano 3D con manipulacion de mouse."""
-        ax_2d = comp["ax_2d"]
-        ax_3d = comp["ax_3d"]
-        fig = comp["fig"]
+        """Dibuja en las tres vistas: 3D ampliada, 2D ampliada y Vista Dual."""
         X = comp["X"]
         yd = comp["yd"]
         desc = comp["desc_entradas"]
+        color_linea = "#1f77b4" if comp["w_def"][0] == 0.3 else "#2ca02c"
 
-        ax_2d.clear()
-        ax_3d.clear()
+        # 1. Dibujar Vista 3D Grande (ax_3d_only)
+        self._dibujar_espacio_3d(comp["ax_3d_only"], X, yd, desc, ps, titulo="Hiperplano Separador 3D (Manipulable con Raton)")
+        comp["fig_3d"].subplots_adjust(left=0.02, right=0.98, top=0.94, bottom=0.06)
+        comp["canvas_3d"].draw()
 
-        # 1. Curva de Aprendizaje 2D
+        # 2. Dibujar Vista 2D Grande (ax_2d_only)
+        self._dibujar_curva_2d(comp["ax_2d_only"], historial_error, color_linea, "Curva de Aprendizaje del Perceptron (Error Global vs Epocas)")
+        comp["fig_2d"].tight_layout(pad=3.0)
+        comp["canvas_2d"].draw()
+
+        # 3. Dibujar Vista Dual
+        self._dibujar_curva_2d(comp["ax_dual_2d"], historial_error, color_linea, "Curva de Aprendizaje")
+        self._dibujar_espacio_3d(comp["ax_dual_3d"], X, yd, desc, ps, titulo="Hiperplano Separador 3D")
+        comp["fig_dual"].tight_layout(pad=2.8)
+        comp["canvas_dual"].draw()
+
+    def _dibujar_curva_2d(self, ax, historial_error, color_linea, titulo):
+        """Renderiza la curva de error en un eje 2D dado."""
+        ax.clear()
         if historial_error:
             epocas = list(range(1, len(historial_error) + 1))
-            color_linea = "#1f77b4" if comp["w_def"][0] == 0.3 else "#2ca02c"
-            ax_2d.plot(epocas, historial_error, marker="o", markersize=6, color=color_linea, linewidth=2, label="Error Global")
+            ax.plot(epocas, historial_error, marker="o", markersize=7, color=color_linea, linewidth=2.2, label="Error Global")
             for ep, err in zip(epocas, historial_error):
-                ax_2d.annotate(f"E={err}", (ep, err), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=8, weight="bold")
-            ax_2d.set_xticks(epocas)
-            ax_2d.set_ylim([-0.5, max(historial_error) + 1.5])
-            ax_2d.set_ylabel("Error Acumulado")
-            ax_2d.set_title(f"Curva de Aprendizaje (Convergencia en {len(historial_error)} Epocas)", fontsize=10, weight="bold")
-            ax_2d.grid(True, linestyle="--", alpha=0.6)
-            ax_2d.legend(loc="upper right", fontsize=8)
+                ax.annotate(f"E={err}", (ep, err), textcoords="offset points", xytext=(0, 6), ha="center", fontsize=9, weight="bold")
+            ax.set_xticks(epocas)
+            ax.set_ylim([-0.5, max(historial_error) + 1.5])
+            ax.set_ylabel("Error Acumulado (E_global)", fontsize=9)
+            ax.set_xlabel("Epocas de Entrenamiento", fontsize=9)
+            ax.set_title(titulo, fontsize=10, weight="bold")
+            ax.grid(True, linestyle="--", alpha=0.6)
+            ax.legend(loc="upper right", fontsize=8)
         else:
-            ax_2d.text(0.5, 0.5, "Haga clic en 'Entrenar Perceptron' para graficar", ha="center", va="center", transform=ax_2d.transAxes, fontsize=9)
-            ax_2d.set_title("Curva de Aprendizaje", fontsize=10, weight="bold")
+            ax.text(0.5, 0.5, "Presione 'Entrenar Perceptron' para graficar", ha="center", va="center", transform=ax.transAxes, fontsize=10)
+            ax.set_title(titulo, fontsize=10, weight="bold")
 
-        # 2. Espacio de Patrones e Hiperplano Separador 3D
+    def _dibujar_espacio_3d(self, ax, X, yd, desc, ps, titulo):
+        """Renderiza los puntos bipolares y la superficie del hiperplano separador en 3D."""
+        ax.clear()
         for i in range(len(yd)):
             if yd[i] == 1:
-                ax_3d.scatter(X[i, 0], X[i, 1], X[i, 2], color="#1f77b4", s=60, marker="o", label="Clase +1" if i == 0 else "")
+                ax.scatter(X[i, 0], X[i, 1], X[i, 2], color="#1f77b4", s=70, marker="o", label="Clase +1" if i == 0 else "")
             else:
-                ax_3d.scatter(X[i, 0], X[i, 1], X[i, 2], color="#d62728", s=70, marker="^", label="Clase -1" if i == 1 else "")
-            ax_3d.text(X[i, 0] + 0.05, X[i, 1] + 0.05, X[i, 2] + 0.05, f"P{i+1}", fontsize=8, weight="bold")
+                ax.scatter(X[i, 0], X[i, 1], X[i, 2], color="#d62728", s=80, marker="^", label="Clase -1" if i == 1 else "")
+            ax.text(X[i, 0] + 0.06, X[i, 1] + 0.06, X[i, 2] + 0.06, f"P{i+1}", fontsize=9, weight="bold")
 
         if ps is not None:
-            # Generacion de malla para el hiperplano
-            x_range = np.linspace(-1.5, 1.5, 15)
-            y_range = np.linspace(-1.5, 1.5, 15)
+            x_range = np.linspace(-1.5, 1.5, 18)
+            y_range = np.linspace(-1.5, 1.5, 18)
             X_grid, Y_grid = np.meshgrid(x_range, y_range)
 
-            # Ecuacion del plano W1*x1 + W2*x2 + W3*x3 + b = 0
+            # Ecuacion W1*x1 + W2*x2 + W3*x3 + b = 0
             if abs(ps.W[2]) > 1e-5:
                 Z_grid = -(ps.W[0] * X_grid + ps.W[1] * Y_grid + ps.b) / ps.W[2]
-                ax_3d.plot_surface(X_grid, Y_grid, Z_grid, alpha=0.3, color="cyan", edgecolor="none")
+                ax.plot_surface(X_grid, Y_grid, Z_grid, alpha=0.35, color="cyan", edgecolor="none")
             elif abs(ps.W[1]) > 1e-5:
                 Y_grid_calc = -(ps.W[0] * X_grid + ps.W[2] * Y_grid + ps.b) / ps.W[1]
-                ax_3d.plot_surface(X_grid, Y_grid_calc, Y_grid, alpha=0.3, color="cyan", edgecolor="none")
+                ax.plot_surface(X_grid, Y_grid_calc, Y_grid, alpha=0.35, color="cyan", edgecolor="none")
 
-        ax_3d.set_xlabel(desc[0], fontsize=8, labelpad=5)
-        ax_3d.set_ylabel(desc[1], fontsize=8, labelpad=5)
-        ax_3d.set_zlabel(desc[2], fontsize=8, labelpad=5)
-        ax_3d.set_xlim([-1.6, 1.6])
-        ax_3d.set_ylim([-1.6, 1.6])
-        ax_3d.set_zlim([-1.6, 1.6])
-        ax_3d.set_title("Hiperplano Separador 3D (Rotable con Mouse)", fontsize=10, weight="bold")
-        ax_3d.legend(loc="upper left", fontsize=7)
-        ax_3d.view_init(elev=20, azim=45)
-
-        fig.tight_layout(pad=2.5)
-        comp["canvas"].draw()
+        ax.set_xlabel(desc[0], fontsize=8, labelpad=6)
+        ax.set_ylabel(desc[1], fontsize=8, labelpad=6)
+        ax.set_zlabel(desc[2], fontsize=8, labelpad=6)
+        ax.set_xlim([-1.6, 1.6])
+        ax.set_ylim([-1.6, 1.6])
+        ax.set_zlim([-1.6, 1.6])
+        ax.set_title(titulo, fontsize=10, weight="bold")
+        ax.legend(loc="upper left", fontsize=8)
+        ax.view_init(elev=20, azim=45)
 
     def _ejecutar_comparativa(self):
-        """Ejecuta y compara los 3 escenarios de inicializacion del Caso 2."""
+        """Ejecuta los tres escenarios de convergencia del Caso 2 y dibuja graficos comparativos."""
         configs = [
-            ("Principal", [-0.4, -0.7, 0.3], 0.1, "#1f77b4"),
-            ("Optimizado", [-0.9, -0.9, -0.9], 0.9, "#2ca02c"),
-            ("Solucion Directa", [1.0, 1.0, 1.0], 0.0, "#ff7f0e")
+            ("1. Principal", [-0.4, -0.7, 0.3], 0.1, "#1f77b4"),
+            ("2. Optimizado", [-0.9, -0.9, -0.9], 0.9, "#2ca02c"),
+            ("3. Solucion Directa", [1.0, 1.0, 1.0], 0.0, "#ff7f0e")
         ]
 
         tree = self.comp_widgets["tree"]
         for it in tree.get_children():
             tree.delete(it)
 
-        ax_2d = self.comp_widgets["ax_2d"]
-        ax_bar = self.comp_widgets["ax_bar"]
-        fig = self.comp_widgets["fig"]
-
-        ax_2d.clear()
-        ax_bar.clear()
-
         nombres_exp = []
         epocas_totales = []
+        historiales = []
+        colores = []
 
         for nombre, w0, b0, color in configs:
             ps = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=w0, sesgo_inicial=b0)
             hist = ps.entrenar(X_CASO2, YD_CASO2, epocas_max=10, tolerancia=0, verbose=False)
-            
+
             nombres_exp.append(nombre)
             epocas_totales.append(len(hist))
+            historiales.append(hist)
+            colores.append(color)
 
             w_fin_str = str([round(float(v), 1) for v in ps.W])
             tree.insert("", "end", values=(nombre, str(w0), b0, len(hist), w_fin_str, round(ps.b, 1)))
 
-            # Graficar curvas de aprendizaje superpuestas
+        # Dibujar en vista Curvas Superpuestas
+        self._dibujar_curvas_superpuestas(self.comp_widgets["ax_curvas"], nombres_exp, historiales, colores)
+        self.comp_widgets["fig_curvas"].tight_layout(pad=3.0)
+        self.comp_widgets["canvas_curvas"].draw()
+
+        # Dibujar en vista Barras
+        self._dibujar_barras_convergencia(self.comp_widgets["ax_barras"], nombres_exp, epocas_totales, colores)
+        self.comp_widgets["fig_barras"].tight_layout(pad=3.0)
+        self.comp_widgets["canvas_barras"].draw()
+
+        # Dibujar en Vista Dual Comparativa
+        self._dibujar_curvas_superpuestas(self.comp_widgets["ax_d1"], nombres_exp, historiales, colores)
+        self._dibujar_barras_convergencia(self.comp_widgets["ax_d2"], nombres_exp, epocas_totales, colores)
+        self.comp_widgets["fig_dual_comp"].tight_layout(pad=2.8)
+        self.comp_widgets["canvas_dual_comp"].draw()
+
+    def _dibujar_curvas_superpuestas(self, ax, nombres, historiales, colores):
+        """Renderiza la evolucion del error de los tres experimentos del Caso 2."""
+        ax.clear()
+        for nom, hist, col in zip(nombres, historiales, colores):
             epocas_eje = list(range(1, len(hist) + 1))
-            ax_2d.plot(epocas_eje, hist, marker="o", linewidth=2, color=color, label=f"{nombre} ({len(hist)} epocas)")
+            ax.plot(epocas_eje, hist, marker="o", markersize=6, linewidth=2.2, color=col, label=f"{nom} ({len(hist)} ep)")
             for ep, err in zip(epocas_eje, hist):
-                ax_2d.annotate(f"{err}", (ep, err), textcoords="offset points", xytext=(0, 5), ha="center", fontsize=8)
+                ax.annotate(f"{err}", (ep, err), textcoords="offset points", xytext=(0, 5), ha="center", fontsize=8)
 
-        ax_2d.set_title("Comparacion de Curvas de Aprendizaje (Error Global por Epoca)", fontsize=10, weight="bold")
-        ax_2d.set_xlabel("Epoca")
-        ax_2d.set_ylabel("Error Global Acumulado")
-        ax_2d.grid(True, linestyle="--", alpha=0.6)
-        ax_2d.legend(loc="upper right", fontsize=8)
+        ax.set_title("Comparacion de Curvas de Aprendizaje (Caso 2: Diagnostico)", fontsize=10, weight="bold")
+        ax.set_xlabel("Epoca de Entrenamiento", fontsize=9)
+        ax.set_ylabel("Error Global Acumulado (E_global)", fontsize=9)
+        ax.grid(True, linestyle="--", alpha=0.6)
+        ax.legend(loc="upper right", fontsize=8)
 
-        # Grafico de barras: Epocas de convergencia
-        colores_barras = ["#1f77b4", "#2ca02c", "#ff7f0e"]
-        barras = ax_bar.bar(nombres_exp, epocas_totales, color=colores_barras, width=0.45)
-        ax_bar.set_title("Velocidad de Convergencia (Epocas hasta E_global = 0)", fontsize=10, weight="bold")
-        ax_bar.set_ylabel("Numero de Epocas")
-        ax_bar.set_ylim([0, 4.5])
-        ax_bar.grid(axis="y", linestyle="--", alpha=0.6)
+    def _dibujar_barras_convergencia(self, ax, nombres, epocas_totales, colores):
+        """Renderiza el grafico de barras comparativo de velocidad de convergencia."""
+        ax.clear()
+        barras = ax.bar(nombres, epocas_totales, color=colores, width=0.45)
+        ax.set_title("Velocidad de Convergencia por Configuracion Inicial (Caso 2)", fontsize=10, weight="bold")
+        ax.set_ylabel("Numero de Epocas hasta Converger", fontsize=9)
+        ax.set_ylim([0, 4.2])
+        ax.grid(axis="y", linestyle="--", alpha=0.6)
 
         for bar in barras:
             altura = bar.get_height()
-            ax_bar.annotate(f"{altura} epocas",
-                            xy=(bar.get_x() + bar.get_width() / 2, altura),
-                            xytext=(0, 4), textcoords="offset points",
-                            ha="center", va="bottom", fontsize=9, weight="bold")
-
-        fig.tight_layout(pad=2.5)
-        self.comp_widgets["canvas"].draw()
+            ax.annotate(f"{altura} epocas",
+                        xy=(bar.get_x() + bar.get_width() / 2, altura),
+                        xytext=(0, 4), textcoords="offset points",
+                        ha="center", va="bottom", fontsize=9, weight="bold")
 
     def cerrar_aplicacion(self):
-        """Cierra todas las figuras de Matplotlib y destruye la ventana principal."""
+        """Cierra todas las figuras de Matplotlib de forma limpia y destruye la ventana."""
         plt.close("all")
         self.root.destroy()
 
