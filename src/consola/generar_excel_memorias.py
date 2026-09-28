@@ -186,9 +186,9 @@ def crear_memorias_excel():
             ws.column_dimensions[col_letter].width = max(max_len + 3, 10)
 
     # Guardar en docs
-    ruta_salida = os.path.join(os.path.dirname(__file__), "..", "docs", "Memorias_Calculo_Perceptron_Corte2.xlsx")
+    ruta_salida = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "Memorias_Calculo_Perceptron_Corte2.xlsx")
     wb.save(ruta_salida)
-    print(f"Archivo Excel generado con éxito en: {ruta_salida}")
+    print(f"Archivo Excel generado con exito en: {ruta_salida}")
 
 if __name__ == "__main__":
     crear_memorias_excel()

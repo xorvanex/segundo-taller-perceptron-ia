@@ -82,54 +82,58 @@ El Perceptrón Simple actúa como un clasificador lineal discriminativo que apre
 
 ---
 
-## 📂 Estructura Modular del Proyecto
+## Estructura Modular del Proyecto
 
 ```text
-📦 segundo-taller-perceptron-ia
- ┣ 📂 data
- ┃ ┣ 📂 datasets                                       # Matrices numéricas en formato CSV
- ┃ ┃ ┣ 📊 patrones_caso1_paloma.csv
- ┃ ┃ ┗ 📊 patrones_caso2_diagnostico.csv
- ┃ ┗ 📂 enunciados                                     # Documentos de la cátedra
- ┃   ┣ 📄 Caso de estudio 1 PS.pdf
- ┃   ┣ 📄 Caso de estudio 2 PS.pdf
- ┃   ┗ 📄 Informacion_actidad.txt
+segundo-taller-perceptron-ia
+ ┣ data
+ ┃ ┣ datasets                                       # Matrices numericas en formato CSV
+ ┃ ┃ ┣ patrones_caso1_paloma.csv
+ ┃ ┃ ┗ patrones_caso2_diagnostico.csv
+ ┃ ┗ enunciados                                     # Documentos de la catedra
+ ┃   ┣ Caso de estudio 1 PS.pdf
+ ┃   ┣ Caso de estudio 2 PS.pdf
+ ┃   ┗ Informacion_actidad.txt
  ┃
- ┣ 📂 docs
- ┃ ┣ 📝 Taller_Percetron_Simple_IA_PALMERA_CAMARGO.docx # Documento formal de entrega en Word
- ┃ ┣ 📗 Memorias_Calculo_Perceptron_Corte2.xlsx       # Libro Excel con TODOS los cálculos paso a paso
- ┃ ┣ 📂 img                                            # Visualizaciones vectoriales generadas
- ┃ ┃ ┣ 🖼️ Curva_Aprendizaje_Caso1.png
- ┃ ┃ ┣ 🖼️ Grafica3D_Caso1_Paloma.png
- ┃ ┃ ┣ 🖼️ Curva_Aprendizaje_Caso2.png
- ┃ ┃ ┗ 🖼️ Grafica3D_Caso2_Diagnostico.png
- ┃ ┗ 📂 md                                             # Memorias analíticas en Markdown
- ┃   ┣ 📄 Introduccion_Objetivos_y_Fundamentacion.md   # Marco teórico, portada e introducción
- ┃   ┣ 📄 Memoria Calculo Caso 1 - Condicionamiento Paloma.md
- ┃   ┣ 📄 Memoria Calculo Caso 2 - Diagnostico Medico.md
- ┃   ┗ 📄 Analisis_y_Conclusiones.md                   # Análisis global y conclusiones
+ ┣ docs
+ ┃ ┣ Taller_Percetron_Simple_IA_PALMERA_CAMARGO.docx # Documento formal de entrega en Word
+ ┃ ┣ Memorias_Calculo_Perceptron_Corte2.xlsx       # Libro Excel con calculos paso a paso
+ ┃ ┣ img                                            # Visualizaciones vectoriales generadas
+ ┃ ┃ ┣ Curva_Aprendizaje_Caso1.png
+ ┃ ┃ ┣ Grafica3D_Caso1_Paloma.png
+ ┃ ┃ ┣ Curva_Aprendizaje_Caso2.png
+ ┃ ┃ ┗ Grafica3D_Caso2_Diagnostico.png
+ ┃ ┗ md                                             # Memorias analiticas en Markdown
+ ┃   ┣ Introduccion_Objetivos_y_Fundamentacion.md   # Marco teorico, portada e introduccion
+ ┃   ┣ Memoria Calculo Caso 1 - Condicionamiento Paloma.md
+ ┃   ┣ Memoria Calculo Caso 2 - Diagnostico Medico.md
+ ┃   ┗ Analisis_y_Conclusiones.md                   # Analisis global y conclusiones
  ┃
- ┣ 📂 src
- ┃ ┣ 🐍 __init__.py                                    # Inicializador del paquete Python
- ┃ ┣ 🐍 perceptron.py                                  # Clase modular PerceptronSimpleBipolar
- ┃ ┣ 🐍 caso_1_paloma.py                               # Script ejecutable Caso 1 (La Paloma)
- ┃ ┣ 🐍 caso_2_diagnostico.py                          # Script ejecutable Caso 2 (Diagnóstico)
- ┃ ┗ 🐍 generar_excel_memorias.py                      # Generador automático del archivo .xlsx
+ ┣ src
+ ┃ ┣ __init__.py                                    # Inicializador del paquete Python
+ ┃ ┣ perceptron.py                                  # Clase central PerceptronSimpleBipolar
+ ┃ ┣ app_gui.py                                     # Interfaz Grafica de Usuario (GUI Tkinter + Matplotlib)
+ ┃ ┗ consola                                        # Modulo de ejecucion directa por terminal
+ ┃   ┣ __init__.py
+ ┃   ┣ caso_1_paloma.py                             # Script consola Caso 1 (La Paloma)
+ ┃   ┣ caso_2_diagnostico.py                        # Script consola Caso 2 (Diagnostico)
+ ┃   ┗ generar_excel_memorias.py                    # Generador del archivo .xlsx
  ┃
- ┣ 📜 .gitignore                                       # Exclusiones de Git (venv, pycache)
- ┣ 📜 requirements.txt                                 # Dependencias del proyecto
- ┣ 📜 LICENSE                                          # Licencia MIT
- ┗ 📜 README.md                                        # Instructivo y documentación principal
+ ┣ main.py                                          # Lanzador principal de la aplicacion GUI
+ ┣ .gitignore                                       # Exclusiones de Git (venv, pycache)
+ ┣ requirements.txt                                 # Dependencias del proyecto
+ ┣ LICENSE                                          # Licencia MIT
+ ┗ README.md                                        # Instructivo y documentacion principal
 ```
 
 ---
 
-## 🛠️ Requisitos y Configuración del Entorno
+## Requisitos y Configuracion del Entorno
 
 ### 1. Prerrequisitos
 * **Python 3.8 o superior** instalado en el sistema.
 
-### 2. Creación y Activación del Entorno Virtual (Opcional pero recomendado)
+### 2. Creacion y Activacion del Entorno Virtual (Opcional pero recomendado)
 En PowerShell (Windows):
 ```powershell
 python -m venv venv
@@ -141,46 +145,53 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### 3. Instalación de Dependencias
+### 3. Instalacion de Dependencias
 ```bash
 pip install -r requirements.txt
 ```
-*Librerías principales empleadas:*
-* `numpy` (Álgebra lineal, matrices y cálculo vectorial)
-* `matplotlib` (Trazado de curvas de error y superficies 3D)
-* `openpyxl` (Generación programática de hojas de cálculo Excel)
+*Librerias principales empleadas:*
+* `numpy` (Algebra lineal, matrices y calculo vectorial)
+* `matplotlib` (Trazado de curvas de error y superficies 3D interactivas)
+* `openpyxl` (Generacion programatica de hojas de calculo Excel)
 
 ---
 
-## 🚀 Guía de Ejecución de los Programas
+## Guia de Ejecucion de los Programas
 
-### 🔹 Ejecutar Caso 1: Condicionamiento de la Paloma
-Entrena el perceptrón para el caso de Skinner, reporta cada época por consola y genera las figuras correspondientes:
+### 1. Interfaz Grafica de Usuario (Recomendado)
+Inicia la aplicacion de escritorio completa con simulacion en tiempo real, tablas de verificacion y visualizaciones 3D interactivas (rotables con el raton):
 ```bash
-python src/caso_1_paloma.py
+python main.py
 ```
-* **Salidas generadas:**
-  * Log detallado iteración por iteración en terminal.
-  * Curva de aprendizaje guardada en `docs/img/Curva_Aprendizaje_Caso1.png`.
-  * Gráfica 3D del plano separador en `docs/img/Grafica3D_Caso1_Paloma.png`.
+*o alternativamente:*
+```bash
+python src/app_gui.py
+```
+* **Caracteristicas de la GUI:**
+  * Pestaña Caso 1 (Paloma): Modificacion interactiva de pesos y sesgo inicial, verificacion de 8 patrones y renderizado de curva 2D e hiperplano 3D.
+  * Pestaña Caso 2 (Diagnostico): Selector de presets (3, 2 y 1 epocas) o parametros personalizados con clasificador interactivo.
+  * Pestaña Comparativa de Sensibilidad: Curvas superpuestas y grafico de barras de velocidad de convergencia.
+  * Visualizacion interactiva con `FigureCanvasTkAgg` y `NavigationToolbar2Tk`: permite rotar la nube de puntos y el plano 3D con el cursor. Cierre limpio sin dejar archivos residuales ni fugas de memoria.
 
-### 🔹 Ejecutar Caso 2: Diagnóstico Médico por Síntomas
-Ejecuta el experimento clínico principal (3 épocas) y la experimentación comparativa de sensibilidad (2 y 1 épocas):
-```bash
-python src/caso_2_diagnostico.py
-```
-* **Salidas generadas:**
-  * Log del experimento principal de 3 épocas.
-  * Curva de aprendizaje guardada en `docs/img/Curva_Aprendizaje_Caso2.png`.
-  * Gráfica 3D del hiperplano separador en `docs/img/Grafica3D_Caso2_Diagnostico.png`.
-  * Tabla comparativa consolidada en consola contrastando las 3 inicializaciones.
+### 2. Scripts de Consola (Ejecucion Terminal)
 
-### 🔹 Regenerar el Libro Excel de Memorias de Cálculo (.xlsx)
-Genera el archivo con las tablas numéricas tabuladas de todas las iteraciones:
+#### Caso 1: Condicionamiento de la Paloma
+Entrena el perceptron para el caso de Skinner, reporta cada epoca por consola y genera las figuras correspondientes:
 ```bash
-python src/generar_excel_memorias.py
+python src/consola/caso_1_paloma.py
 ```
-* **Salida generada:** `docs/Memorias_Calculo_Perceptron_Corte2.xlsx`.
+
+#### Caso 2: Diagnostico Medico por Sintomas
+Ejecuta el experimento clinico principal (3 epocas) y la experimentacion comparativa de sensibilidad (2 y 1 epocas):
+```bash
+python src/consola/caso_2_diagnostico.py
+```
+
+#### Regenerar el Libro Excel de Memorias de Calculo (.xlsx)
+Genera el archivo con las tablas numericas tabuladas de todas las iteraciones:
+```bash
+python src/consola/generar_excel_memorias.py
+```
 
 ---
 
