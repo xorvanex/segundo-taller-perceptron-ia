@@ -1,0 +1,31 @@
+# Actividad de trabajo colaborativo
+
+**Docente:** Manuel Alejandro Ospina Alarcón
+**Valor:** 7 puntos
+**Fecha de entrega:** lunes 28 de septiembre de 2026, 11:59 p. m.
+**Modalidad:** Grupos de 2 personas
+
+## Descripción de la actividad
+
+Cordial saludo.
+
+Les comparto la actividad evaluativa del curso, la cual consta de **dos ejercicios relacionados con la programación y simulación de una red neuronal tipo Perceptrón Simple (PS)**.
+
+Recuerden que la actividad debe realizarse en **grupos de dos personas** y deberá ser entregada a más tardar el **lunes 28 de septiembre de 2026 a las 11:59 p. m.**
+
+Para el desarrollo de la actividad, el Perceptrón Simple debe ser capaz de **aprender y clasificar los patrones suministrados**. Para ello, se deben tener en cuenta los siguientes aspectos:
+
+1. La actividad corresponde a un **ejercicio de simulación**, por lo que se debe mostrar el **algoritmo de entrenamiento del Perceptrón Simple**. Las tres entradas y el valor deseado deben ajustarse al intervalo de operación **bipolar (-1, +1)**.
+2. Se deben mostrar claramente los **patrones de entrada y sus respectivos valores de salida deseados**.
+3. Se deben presentar los **pesos y el bias (sesgo o umbral) iniciales** antes de comenzar el entrenamiento.
+4. Se debe mostrar una **gráfica que represente la disminución del error a medida que el Perceptrón realiza el entrenamiento**.
+5. Una vez que la red neuronal haya sido entrenada, se deben presentar los **valores finales de los pesos y del bias (sesgo)**.
+6. Se debe incluir la **gráfica del error por cada época de entrenamiento**, evidenciando su comportamiento durante el proceso de aprendizaje.
+
+## Consideraciones
+
+Recuerden que, si tienen alguna duda, estaré disponible para atenderlas **vía correo electrónico**.
+
+Además, cuentan con las **dos sesiones correspondientes a la semana 8, del 21 al 25 de septiembre**, para desarrollar esta actividad.
+
+Nos volveremos a encontrar el próximo **martes 29 de septiembre**, para continuar con el tema de **redes neuronales**.

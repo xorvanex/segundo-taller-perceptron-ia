@@ -1,0 +1,9 @@
+paciente,x1,x2,x3,sintomas_conteo,diagnostico_clinico,yd
+P1,-1,-1,-1,0,Asintomatico (Sano),-1
+P2,-1,-1,1,1,Leve (Sano),-1
+P3,-1,1,-1,1,Leve (Sano),-1
+P4,-1,1,1,2,Patologia confirmada (Enfermo),1
+P5,1,-1,-1,1,Leve (Sano),-1
+P6,1,-1,1,2,Patologia confirmada (Enfermo),1
+P7,1,1,-1,2,Patologia confirmada (Enfermo),1
+P8,1,1,1,3,Cuadro clinico severo (Enfermo),1

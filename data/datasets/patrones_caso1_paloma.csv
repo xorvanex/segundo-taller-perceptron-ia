@@ -1,0 +1,9 @@
+patron,x1,x2,x3,condicion_ambiental,accion_paloma,yd
+P1,-1,-1,-1,Ambos Apagados,Pica Pulsador Derecho,1
+P2,-1,-1,1,Ambos Apagados,Pica Pulsador Izquierdo,-1
+P3,-1,1,-1,Derecho Encendido,Pica Pulsador Derecho,1
+P4,-1,1,1,Derecho Encendido,Pica Pulsador Izquierdo,1
+P5,1,-1,-1,Izquierdo Encendido,Pica Pulsador Derecho,1
+P6,1,-1,1,Izquierdo Encendido,Pica Pulsador Izquierdo,1
+P7,1,1,-1,Ambos Encendidos,Pica Pulsador Derecho,1
+P8,1,1,1,Ambos Encendidos,Pica Pulsador Izquierdo,1
