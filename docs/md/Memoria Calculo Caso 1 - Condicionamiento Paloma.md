@@ -180,6 +180,129 @@ SALIDA:
 
 ---
 
+#### Implementación Computacional en Python (Caso 1: Paloma)
+
+En estricta correspondencia con el pseudocódigo formal y la arquitectura modular del código final desarrollado en el proyecto (`src/perceptron.py` y `src/consola/caso_1_paloma.py`), a continuación se presenta el script en Python que implementa la clase `PerceptronSimpleBipolar` y ejecuta el entrenamiento supervisado mediante la Regla Delta para este caso de estudio:
+
+```python
+# -*- coding: utf-8 -*-
+"""
+Caso de Estudio 1: Simulacion del Condicionamiento Instrumental de la Paloma
+Implementacion algoritmica del Perceptron Simple Bipolar con funcion hardlims.
+"""
+
+import numpy as np
+
+
+class PerceptronSimpleBipolar:
+    """
+    Red Neuronal Monocapa tipo Perceptron Simple Bipolar.
+
+    Atributos:
+        n_entradas (int): Numero de entradas de la red.
+        W (np.ndarray): Vector de pesos sinapticos.
+        b (float): Termino de sesgo (bias).
+        historial_error (list): Registro del error global por epoca.
+        epocas_entrenadas (int): Total de epocas ejecutadas.
+    """
+
+    def __init__(self, n_entradas=3, pesos_iniciales=None, sesgo_inicial=None):
+        """Inicializa pesos y sesgo de la neurona."""
+        self.n_entradas = n_entradas
+        self.W = np.array(pesos_iniciales, dtype=float) if pesos_iniciales is not None else np.round(np.random.uniform(-1.0, 1.0, size=n_entradas), 2)
+        self.b = float(sesgo_inicial) if sesgo_inicial is not None else float(np.round(np.random.uniform(0.0, 1.0), 2))
+        self.historial_error = []
+        self.epocas_entrenadas = 0
+
+    @staticmethod
+    def hardlims(a):
+        """Funcion de activacion escalon simetrica hardlims(a)."""
+        return 1 if a >= 0 else -1
+
+    def propagacion(self, X):
+        """Calcula la combinacion lineal a = W^T * X + b."""
+        return float(np.dot(self.W, X) + self.b)
+
+    def predecir(self, X):
+        """Clasifica una entrada mediante hardlims(a)."""
+        return self.hardlims(self.propagacion(X))
+
+    def entrenar(self, X_train, y_train, epocas_max=100, tolerancia=0, verbose=True):
+        """
+        Ejecuta el ciclo de entrenamiento supervisado con la Regla Delta.
+        """
+        N = len(y_train)
+        self.historial_error = []
+        self.epocas_entrenadas = 0
+
+        while self.epocas_entrenadas < epocas_max:
+            self.epocas_entrenadas += 1
+            error_global = 0
+
+            for k in range(N):
+                X_k = np.array(X_train[k], dtype=float)
+                yd_k = int(y_train[k])
+
+                # Propagacion y evaluacion
+                a = self.propagacion(X_k)
+                y = self.hardlims(a)
+                e = yd_k - y
+
+                # Actualizacion sinaptica por Regla Delta
+                if e != 0:
+                    delta_W = e * X_k
+                    self.W += delta_W
+                    self.b += e
+                    error_global += abs(e)
+
+            self.historial_error.append(error_global)
+
+            # Criterio de parada
+            if error_global <= tolerancia:
+                break
+
+        return self.historial_error
+
+
+def resolver_caso_1():
+    """Ejecuta el entrenamiento y verificacion para el Caso 1 (Paloma)."""
+    # 1. Matriz de patrones bipolares de entrenamiento
+    # X = [x1 (Pulsador Izq), x2 (Pulsador Der), x3 (Accion Paloma)]
+    X = np.array([
+        [-1, -1, -1],
+        [-1, -1,  1],
+        [-1,  1, -1],
+        [-1,  1,  1],
+        [ 1, -1, -1],
+        [ 1, -1,  1],
+        [ 1,  1, -1],
+        [ 1,  1,  1]
+    ], dtype=int)
+    yd = np.array([1, -1, 1, 1, 1, 1, 1, 1], dtype=int)
+
+    # 2. Condiciones iniciales
+    W0 = [0.3, -0.9, -0.4]
+    b0 = 0.2
+
+    # 3. Instanciar y entrenar la red
+    ps = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=W0, sesgo_inicial=b0)
+    historial_error = ps.entrenar(X, yd, epocas_max=10, tolerancia=0, verbose=False)
+
+    # 4. Verificacion de clasificacion con parametros calibrados
+    print(f"Convergencia alcanzada en Epoca {ps.epocas_entrenadas} con Error Global = {historial_error[-1]}")
+    print(f"Pesos finales calibrados W* = {list(ps.W)}, Sesgo final b* = {ps.b}")
+    for k in range(len(yd)):
+        a = ps.propagacion(X[k])
+        y = ps.predecir(X[k])
+        print(f"P{k+1}: X={list(X[k])}, yd={yd[k]}, y={y}, a={a:.1f} -> {'CORRECTO' if y == yd[k] else 'ERROR'}")
+
+
+if __name__ == "__main__":
+    resolver_caso_1()
+```
+
+---
+
 ### DESARROLLO ARITMÉTICO: ÉPOCA 1
 
 * **Estado inicial:** $\mathbf{W} = [0.3,\ -0.9,\ -0.4]^T$, $b = 0.2$. $E_{global} = 0$.

@@ -185,6 +185,136 @@ SALIDA:
 
 ---
 
+### Implementación Computacional en Python (Caso 2: Diagnóstico Médico)
+
+En estricta correspondencia con el pseudocódigo formal y el diseño modular del código final desarrollado en el proyecto (`src/perceptron.py` y `src/consola/caso_2_diagnostico.py`), a continuación se presenta el script en Python que implementa la clase `PerceptronSimpleBipolar` y ejecuta tanto el experimento principal (convergencia en 3 épocas) como la experimentación comparativa de sensibilidad (convergencia acelerada en 2 épocas y 1 época):
+
+```python
+# -*- coding: utf-8 -*-
+"""
+Caso de Estudio 2: Sistema de Diagnostico Medico Basado en Sintomas
+Implementacion algoritmica del Perceptron Simple Bipolar con funcion hardlims.
+"""
+
+import numpy as np
+
+
+class PerceptronSimpleBipolar:
+    """
+    Red Neuronal Monocapa tipo Perceptron Simple Bipolar.
+
+    Atributos:
+        n_entradas (int): Numero de variables clinicas de entrada.
+        W (np.ndarray): Vector de pesos sinapticos.
+        b (float): Termino de sesgo (bias).
+        historial_error (list): Registro del error global por epoca.
+        epocas_entrenadas (int): Total de epocas ejecutadas.
+    """
+
+    def __init__(self, n_entradas=3, pesos_iniciales=None, sesgo_inicial=None):
+        """Inicializa pesos y sesgo de la neurona."""
+        self.n_entradas = n_entradas
+        self.W = np.array(pesos_iniciales, dtype=float) if pesos_iniciales is not None else np.round(np.random.uniform(-1.0, 1.0, size=n_entradas), 2)
+        self.b = float(sesgo_inicial) if sesgo_inicial is not None else float(np.round(np.random.uniform(0.0, 1.0), 2))
+        self.historial_error = []
+        self.epocas_entrenadas = 0
+
+    @staticmethod
+    def hardlims(a):
+        """Funcion de activacion escalon simetrica hardlims(a)."""
+        return 1 if a >= 0 else -1
+
+    def propagacion(self, X):
+        """Calcula la combinacion lineal ponderada a = W^T * X + b."""
+        return float(np.dot(self.W, X) + self.b)
+
+    def predecir(self, X):
+        """Clasifica el patron clinico mediante hardlims(a)."""
+        return self.hardlims(self.propagacion(X))
+
+    def entrenar(self, X_train, y_train, epocas_max=100, tolerancia=0, verbose=True):
+        """
+        Ejecuta el ciclo de entrenamiento supervisado con la Regla Delta.
+        """
+        N = len(y_train)
+        self.historial_error = []
+        self.epocas_entrenadas = 0
+
+        while self.epocas_entrenadas < epocas_max:
+            self.epocas_entrenadas += 1
+            error_global = 0
+
+            for k in range(N):
+                X_k = np.array(X_train[k], dtype=float)
+                yd_k = int(y_train[k])
+
+                # Propagacion y clasificacion
+                a = self.propagacion(X_k)
+                y = self.hardlims(a)
+                e = yd_k - y
+
+                # Ajuste sinaptico adaptativo por Regla Delta
+                if e != 0:
+                    delta_W = e * X_k
+                    self.W += delta_W
+                    self.b += e
+                    error_global += abs(e)
+
+            self.historial_error.append(error_global)
+
+            # Condicion de parada: error nulo
+            if error_global <= tolerancia:
+                break
+
+        return self.historial_error
+
+
+def resolver_caso_2():
+    """Ejecuta el experimento principal y la comparativa de sensibilidad (Caso 2)."""
+    # 1. Matriz de patrones clinicos bipolares
+    # X = [x1 (Fiebre), x2 (Cefalea), x3 (Fatiga)]
+    X = np.array([
+        [-1, -1, -1],
+        [-1, -1,  1],
+        [-1,  1, -1],
+        [-1,  1,  1],
+        [ 1, -1, -1],
+        [ 1, -1,  1],
+        [ 1,  1, -1],
+        [ 1,  1,  1]
+    ], dtype=int)
+    yd = np.array([-1, -1, -1, 1, -1, 1, 1, 1], dtype=int)
+
+    # 2. Experimento Principal (Convergencia en 3 Epocas)
+    W0 = [-0.4, -0.7, 0.3]
+    b0 = 0.1
+    print("--- 1. EXPERIMENTO PRINCIPAL (3 EPOCAS) ---")
+    ps_principal = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=W0, sesgo_inicial=b0)
+    hist_p = ps_principal.entrenar(X, yd, epocas_max=10, tolerancia=0, verbose=False)
+    print(f"Convergencia en Epoca {ps_principal.epocas_entrenadas} | Historial: {hist_p}")
+    print(f"Pesos finales calibrados W* = {list(ps_principal.W)}, Sesgo final b* = {ps_principal.b}\n")
+
+    # 3. Configuracion Optimizada (Convergencia en 2 Epocas)
+    print("--- 2. CONFIGURACION OPTIMIZADA (2 EPOCAS) ---")
+    ps_2ep = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=[-0.9, -0.9, -0.9], sesgo_inicial=0.9)
+    hist_2ep = ps_2ep.entrenar(X, yd, epocas_max=10, tolerancia=0, verbose=False)
+    print(f"Convergencia en Epoca {ps_2ep.epocas_entrenadas} | Historial: {hist_2ep}")
+    print(f"Pesos finales calibrados W* = {list(ps_2ep.W)}, Sesgo final b* = {ps_2ep.b}\n")
+
+    # 4. Solucion Directa (Convergencia en 1 Epoca)
+    print("--- 3. SOLUCION DIRECTA (1 EPOCA) ---")
+    ps_1ep = PerceptronSimpleBipolar(n_entradas=3, pesos_iniciales=[1.0, 1.0, 1.0], sesgo_inicial=0.0)
+    hist_1ep = ps_1ep.entrenar(X, yd, epocas_max=10, tolerancia=0, verbose=False)
+    print(f"Convergencia en Epoca {ps_1ep.epocas_entrenadas} | Historial: {hist_1ep}")
+    print(f"Pesos finales calibrados W* = {list(ps_1ep.W)}, Sesgo final b* = {ps_1ep.b}")
+
+
+if __name__ == "__main__":
+    resolver_caso_2()
+```
+
+---
+
 ### DESARROLLO ARITMÉTICO: ÉPOCA 1
 
 * **Estado inicial:** $\mathbf{W} = [-0.4,\ -0.7,\ 0.3]^T$, $b = 0.1$. $E_{global} = 0$.
